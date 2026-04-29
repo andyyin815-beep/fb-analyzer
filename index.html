@@ -1,148 +1,67 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FB 互動排行榜 - 2026 最終修復版</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f0f2f5; font-family: "Segoe UI", sans-serif; }
-        .main-card { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top: 2rem; }
-        .btn-fb { background-color: #0866FF; color: white; font-weight: bold; }
-        #result-area { display: none; margin-top: 20px; }
-        .friend-item { background: white; border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; border: 1px solid #ddd; transition: 0.2s; }
-        .friend-item:hover { background: #f8f9fa; border-color: #0866FF; }
-        .rank-badge { width: 45px; font-weight: 800; color: #0866FF; font-size: 1.2rem; }
-        .success-rate { font-size: 0.9rem; color: #28a745; font-weight: bold; background: #e8f5e9; padding: 5px 12px; border-radius: 20px; }
-    </style>
-</head>
-<body>
-
-<div class="container pb-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-7">
-            <div class="card main-card p-4">
-                <h3 class="text-center fw-bold mb-4">FB 互動好友分析 (最終修復版)</h3>
-                
-                <div class="alert alert-danger" style="font-size: 0.85rem;">
-                    <strong>⚠️ 姓名抓取失敗的解決法：</strong><br>
-                    1. 必須在 <b>Facebook 電腦版首頁</b> 操作。<br>
-                    2. 請先點開右下角的<b>「訊息/聊天室」圖示</b>，讓好友名單彈出來。<br>
-                    3. <b>向下滑動網頁 15 秒</b>，確保 FB 加載了好友姓名緩存。<br>
-                    4. 按 <code>Ctrl + U</code> 複製全部內容。
-                </div>
-
-                <textarea id="sourceInput" class="form-control mb-3" rows="10" placeholder="在此貼上原始碼..."></textarea>
-                
-                <div class="d-grid gap-2">
-                    <button onclick="analyzeFB()" class="btn btn-fb btn-lg">開始深度解析</button>
-                    <button onclick="location.reload()" class="btn btn-outline-secondary btn-sm">清除重新開始</button>
-                </div>
-            </div>
-
-            <div id="result-area">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0">排行榜 <small class="text-muted">(前 50 名)</small></h5>
-                    <div id="statusInfo" class="success-rate">成功率: 0/0</div>
-                </div>
-                <div id="friendList"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-function decodeUnicode(str) {
-    return str.replace(/\\u([a-fA-F0-9]{4})/g, (m, val) => String.fromCharCode(parseInt(val, 16)))
-              .replace(/\\/g, ""); // 移除多餘斜槓
-}
-
-function analyzeFB() {
-    const rawData = document.getElementById('sourceInput').value;
-    const resultArea = document.getElementById('result-area');
-    const statusInfo = document.getElementById('statusInfo');
-
-    if (!rawData || rawData.length < 1000) {
-        alert("原始碼長度不足，請確認是否按 Ctrl+A 全選複製。");
-        return;
+// 模擬從 Facebook 原始碼中解析出來的資料 (已清理過)
+const mockParsedData = [
+    {
+        uid: "100000197808331",
+        name: "Jim Shen", // 確保這裡只有名字，沒有殘留的 JSON 屬性
+        profilePic: "https://via.placeholder.com/48", // 若有抓到大頭貼網址放這
+        profileUrl: "https://www.facebook.com/jim.shen.37"
+    },
+    {
+        uid: "1233188339",
+        name: "Ryan Chen",
+        profilePic: "https://via.placeholder.com/48",
+        profileUrl: "https://www.facebook.com/chen.ryan.37"
+    },
+    {
+        uid: "100000151097241",
+        name: null, // 模擬沒抓到名字的狀況 (即截圖中的第 3 名)
+        profilePic: null,
+        profileUrl: "https://www.facebook.com/profile.php?id=100000151097241"
     }
+];
 
-    const nameMap = {};
-
-    // --- 終極匹配邏輯：掃描所有 JSON 物件中的姓名 ---
-    // 匹配模式：尋找 ID 跟在 NAME 附近的結構
-    const patterns = [
-        /\{"id":"(\d+)","name":"(.*?)"\}/g,
-        /\{"name":"(.*?)","id":"(\d+)"\}/g,
-        /"text":"(.*?)","entity_id":"(\d+)"/g,
-        /"SHORT_NAME":"(.*?)"[^}]*?"USER_ID":"(\d+)"/g,
-        /"USER_ID":"(\d+)"[^}]*?"NAME":"(.*?)"/g
-    ];
-
-    patterns.forEach(reg => {
-        let m;
-        while ((m = reg.exec(rawData)) !== null) {
-            let id, name;
-            // 根據正則捕獲組順序判斷 ID 和姓名
-            if (reg.source.includes("USER_ID")) {
-                if (reg.source.indexOf("USER_ID") < reg.source.indexOf("NAME")) { id = m[1]; name = m[2]; }
-                else { id = m[2]; name = m[1]; }
-            } else if (reg.source.includes("entity_id")) {
-                id = m[2]; name = m[1];
-            } else {
-                id = (!isNaN(m[1])) ? m[1] : m[2];
-                name = (isNaN(m[1])) ? m[1] : m[2];
-            }
-            if (id && id.length > 8 && name) nameMap[id] = decodeUnicode(name);
-        }
-    });
-
-    // --- 提取好友清單 (依據互動頻率) ---
-    const listMatch = rawData.match(/"list":\["(.*?)"\]/);
-    const activeMatch = rawData.match(/"activeList":\[(.*?)]/);
+function renderFriendList(data) {
+    const listContainer = document.getElementById('friendList');
+    listContainer.innerHTML = ''; // 清空現有列表
     
-    let ids = [];
-    if (listMatch) ids = ids.concat(listMatch[1].split('","').map(i => i.split('-')[0]));
-    if (activeMatch) ids = ids.concat(activeMatch[1].split(',').map(i => i.replace(/[^\d]/g, '')));
+    let successCount = 0;
 
-    // 去重
-    const myId = "100075161222048";
-    const uniqueIds = Array.from(new Set(ids.filter(id => id.length > 8 && id !== myId)));
+    data.forEach((friend, index) => {
+        const rank = index + 1;
+        const isNameFound = friend.name !== null && friend.name.trim() !== "";
+        
+        if (isNameFound) successCount++;
 
-    if (uniqueIds.length > 0) {
-        const finalIds = uniqueIds.slice(0, 50);
-        const nameSuccess = finalIds.filter(id => nameMap[id]).length;
-        statusInfo.innerText = `姓名抓取成功率: ${nameSuccess}/${finalIds.length}`;
-        renderList(finalIds, nameMap);
-        resultArea.style.display = 'block';
-        window.scrollTo({ top: resultArea.offsetTop - 20, behavior: 'smooth' });
-    } else {
-        alert("依然解析失敗。建議：\n1. 點開臉書右側『聯絡人』欄位後再按 Ctrl+U。\n2. 確保你在臉書『首頁』而不是個人檔案。");
-    }
-}
+        // 決定顯示的名稱與大頭貼
+        const displayName = isNameFound ? friend.name : "Facebook 好友 (點擊查看)";
+        const displayNameClass = isNameFound ? "fw-bold fs-5 friend-name" : "fw-bold fs-5 text-dark friend-name";
+        const avatarHtml = friend.profilePic 
+            ? `<img src="${friend.profilePic}" class="avatar-img me-3" alt="Avatar">` 
+            : ``; // 如果沒抓到照片就不顯示，或放預設圖
 
-function renderList(ids, nameMap) {
-    const container = document.getElementById('friendList');
-    container.innerHTML = '';
-
-    ids.forEach((id, index) => {
-        let displayName = nameMap[id] || "Facebook 好友 (點擊查看)";
-        const item = document.createElement('div');
-        item.className = 'friend-item';
-        item.innerHTML = `
-            <div class="rank-badge">${index + 1}</div>
-            <div class="flex-grow-1 ms-2">
-                <div class="fw-bold text-dark">${displayName}</div>
-                <div class="text-muted small">UID: ${id}</div>
-            </div>
-            <div>
-                <a href="https://www.facebook.com/${id}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">查看</a>
+        // 建立卡片 HTML
+        const cardHtml = `
+            <div class="friend-card d-flex align-items-center">
+                <div class="rank-number text-center">${rank}</div>
+                ${avatarHtml}
+                <div class="flex-grow-1">
+                    <div class="${displayNameClass} mb-1">${displayName}</div>
+                    <div class="text-secondary small" style="font-family: monospace;">UID: ${friend.uid}</div>
+                </div>
+                <div>
+                    <a href="${friend.profileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                        查看
+                    </a>
+                </div>
             </div>
         `;
-        container.appendChild(item);
+        
+        listContainer.insertAdjacentHTML('beforeend', cardHtml);
     });
-}
-</script>
 
-</body>
-</html>
+    // 更新成功率標籤
+    document.getElementById('successRate').innerText = `${successCount}/${data.length}`;
+}
+
+// 執行渲染
+renderFriendList(mockParsedData);
