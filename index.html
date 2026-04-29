@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FB 互動好友分析器 - 隱私安全版</title>
+    <!-- 引入 Bootstrap 5 提升視覺質感 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f0f2f5; color: #1c1e21; font-family: "Segoe UI", sans-serif; }
+        .main-card { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .btn-fb { background-color: #1877f2; color: white; border-weight: bold; }
+        .btn-fb:hover { background-color: #166fe5; color: white; }
+        #result-area { display: none; }
+        .friend-item { 
+            background: white; border-radius: 10px; padding: 12px; margin-bottom: 8px;
+            display: flex; align-items: center; transition: transform 0.2s;
+        }
+        .friend-item:hover { transform: scale(1.02); background: #f8f9fa; }
+        .rank-badge { width: 40px; font-weight: 800; color: #1877f2; font-size: 1.2rem; }
+        .uid-text { color: #65676b; font-size: 0.85rem; }
+        .instruction-step { font-size: 0.95rem; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            
+            <!-- 頂部標題與說明 -->
+            <div class="card main-card p-4 mb-4">
+                <h3 class="text-center fw-bold mb-4">FB 互動好友分析器</h3>
+                
+                <div class="alert alert-light border instruction-step">
+                    <strong>如何使用：</strong>
+                    <ol class="mt-2 mb-0">
+                        <li>在電腦上開啟 <a href="https://www.facebook.com" target="_blank" class="text-primary">Facebook 首頁</a>。</li>
+                        <li>按下 <code>Ctrl + U</code> (Mac 為 <code>Cmd + Option + U</code>) 開啟原始碼。</li>
+                        <li>全選 (<code>Ctrl + A</code>) 並複製 (<code>Ctrl + C</code>)。</li>
+                        <li>將內容貼在下方方框中，點擊分析。</li>
+                    </ol>
+                </div>
+
+                <textarea id="sourceInput" class="form-control mb-3" rows="8" placeholder="在此貼上 FB 原始碼..."></textarea>
+                
+                <div class="d-grid">
+                    <button id="analyzeBtn" onclick="analyzeFB()" class="btn btn-fb btn-lg">立即開始分析</button>
+                </div>
+            </div>
+
+            <!-- 分析結果區域 -->
+            <div id="result-area">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="fw-bold m-0">分析結果 <small class="text-muted fw-normal">(前 30 名)</small></h4>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="reset()">重新開始</button>
+                </div>
+                <div id="friendList"></div>
+            </div>
+
+            <footer class="text-center mt-5 text-muted" style="font-size: 0.8rem;">
+                <p>※ 本程式僅在您的瀏覽器本地運行，不會將任何數據上傳至伺服器，請安心使用。</p>
+            </footer>
+        </div>
+    </div>
+</div>
+
+<script>
+function analyzeFB() {
+    const rawData = document.getElementById('sourceInput').value;
+    const friendListDiv = document.getElementById('friendList');
+    const resultArea = document.getElementById('result-area');
+
+    if (!rawData.trim()) {
+        alert("請先貼入原始碼內容！");
+        return;
+    }
+
+    // 針對 FB 內部的 InitialChatFriendsList 進行正則匹配
+    // 這是 FB 排序好友的核心 JSON 數據結構
+    const regex = /"list":\["(.*?)"\]/;
+    const match = rawData.match(regex);
+
+    if (match && match[1]) {
+        // 清理數據：分割 ID 並移除附屬編號 (如 -2)
+        const ids = match[1].split('","').map(item => item.split('-')[0]);
+        // 去重
+        const uniqueIds = Array.from(new Set(ids));
+        
+        // 渲染列表
+        renderList(uniqueIds.slice(0, 30));
+        
+        // 顯示結果區，隱藏輸入區（可選）
+        resultArea.style.display = 'block';
+        window.scrollTo({ top: resultArea.offsetTop - 20, behavior: 'smooth' });
+    } else {
+        alert("找不到有效的好友數據。請確保您複製的是「登入後」的 Facebook 首頁原始碼。");
+    }
+}
+
+function renderList(ids) {
+    const container = document.getElementById('friendList');
+    container.innerHTML = '';
+
+    ids.forEach((id, index) => {
+        const item = document.createElement('div');
+        item.className = 'friend-item border';
+        item.innerHTML = `
+            <div class="rank-badge text-center">${index + 1}</div>
+            <div class="flex-grow-1 ms-2">
+                <div class="fw-bold">Facebook 好友</div>
+                <div class="uid-text">UID: ${id}</div>
+            </div>
+            <div>
+                <a href="https://www.facebook.com/${id}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">查看檔案</a>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+
+function reset() {
+    document.getElementById('sourceInput').value = '';
+    document.getElementById('result-area').style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>
