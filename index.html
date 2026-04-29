@@ -3,20 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FB 互動好友排行榜 - 姓名顯示版</title>
+    <title>FB 互動排行榜 - 姓名強化版</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f0f2f5; font-family: "Segoe UI", sans-serif; }
         .main-card { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top: 2rem; }
         .btn-fb { background-color: #0866FF; color: white; font-weight: bold; }
-        .btn-fb:hover { background-color: #0055d4; color: white; }
         #result-area { display: none; margin-top: 20px; }
-        .friend-item { 
-            background: white; border-radius: 12px; padding: 15px; margin-bottom: 10px;
-            display: flex; align-items: center; border: 1px solid #ddd;
-        }
-        .rank-badge { width: 40px; font-weight: 800; color: #0866FF; font-size: 1.2rem; }
-        .uid-text { color: #65676b; font-size: 0.85rem; }
+        .friend-item { background: white; border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; border: 1px solid #ddd; }
+        .rank-badge { width: 45px; font-weight: 800; color: #0866FF; font-size: 1.2rem; }
+        .uid-text { color: #65676b; font-size: 0.8rem; }
+        .instruction-box { background: #fff9db; border: 1px solid #ffec99; border-radius: 8px; padding: 10px; font-size: 0.85rem; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -25,16 +22,19 @@
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-7">
             <div class="card main-card p-4">
-                <h3 class="text-center fw-bold mb-4">FB 互動好友排行 (顯示姓名)</h3>
+                <h3 class="text-center fw-bold mb-4">FB 互動好友分析 (2026 終極版)</h3>
                 
-                <div class="alert alert-primary py-2" style="font-size: 0.85rem;">
-                    <strong>提示：</strong> 2026 最新解析邏輯。請完整複製 FB 首頁原始碼。
+                <div class="instruction-box text-dark">
+                    <strong>💡 如何獲取完整姓名？</strong><br>
+                    1. 打開 FB 首頁後，先**快速向下滑動網頁 3-5 次**。<br>
+                    2. 確保右側「聯絡人」列表已載入完成。<br>
+                    3. 再按 <code>Ctrl + U</code> 複製原始碼，這樣姓名抓取率最高。
                 </div>
 
                 <textarea id="sourceInput" class="form-control mb-3" rows="10" placeholder="請貼上原始碼..."></textarea>
                 
                 <div class="d-grid gap-2">
-                    <button onclick="analyzeFB()" class="btn btn-fb btn-lg">開始分析姓名</button>
+                    <button onclick="analyzeFB()" class="btn btn-fb btn-lg">分析好友姓名</button>
                     <button onclick="location.reload()" class="btn btn-outline-secondary btn-sm">清除重新開始</button>
                 </div>
             </div>
@@ -50,48 +50,40 @@
 <script>
 function analyzeFB() {
     const rawData = document.getElementById('sourceInput').value;
-    const friendListDiv = document.getElementById('friendList');
     const resultArea = document.getElementById('result-area');
 
     if (!rawData || rawData.length < 500) {
-        alert("請確認是否完整複製原始碼（Ctrl+A, Ctrl+C）。");
+        alert("原始碼內容不足，請確認是否完整複製 (Ctrl+A)。");
         return;
     }
 
-    // --- 第一步：建立姓名地圖 ---
-    // 尋找類似 "id":"123","name":"XXX" 的結構
+    // --- 強化版：建立姓名地圖 ---
     const nameMap = {};
-    const nameRegex = /"id":"(\d+)"[^}]*?"name":"(.*?)"/g;
-    let nameMatch;
-    while ((nameMatch = nameRegex.exec(rawData)) !== null) {
-        // 排除掉長度太短或系統預設名稱
-        if (nameMatch[2] && nameMatch[2].length > 0) {
-            nameMap[nameMatch[1]] = nameMatch[2];
-        }
-    }
+    
+    // 匹配模式 1: "id":"123","name":"XXX"
+    const pattern1 = /"id":"(\d+)"[^}]*?"name":"(.*?)"/g;
+    // 匹配模式 2: "uid":123,"text":"XXX"
+    const pattern2 = /"(?:uid|id)":(?:"|)(\d+)(?:"|)[^}]*?"(?:text|name)":"(.*?)"/g;
+    // 匹配模式 3: 針對側邊欄聯絡人列表
+    const pattern3 = /"id":"(\d+)","short_name":"(.*?)"/g;
 
-    // --- 第二步：提取排序清單 ---
-    const patterns = [
-        /"activeList":\[(.*?)]/g, 
-        /"list":\["(.*?)"\]/g,
-        /buddy_id":"(\d+)"/g
-    ];
+    let m;
+    while ((m = pattern1.exec(rawData)) !== null) nameMap[m[1]] = m[2];
+    while ((m = pattern2.exec(rawData)) !== null) nameMap[m[1]] = m[2];
+    while ((m = pattern3.exec(rawData)) !== null) nameMap[m[1]] = m[2];
 
+    // --- 提取排序清單 ---
+    const listPatterns = [/"activeList":\[(.*?)]/g, /"list":\["(.*?)"\]/g];
     let foundIds = [];
-    patterns.forEach((regex, index) => {
+    listPatterns.forEach(regex => {
         let match;
         while ((match = regex.exec(rawData)) !== null) {
-            let content = match[1];
-            if (index <= 1) { 
-                let ids = content.split(',').map(id => id.replace(/[^\d]/g, ''));
-                foundIds = foundIds.concat(ids);
-            } else { 
-                foundIds.push(match[1]);
-            }
+            let ids = match[1].split(',').map(id => id.replace(/[^\d]/g, ''));
+            foundIds = foundIds.concat(ids);
         }
     });
 
-    // --- 第三步：清理數據 ---
+    // 清理與去重
     const myId = "100075161222048"; 
     const uniqueIds = Array.from(new Set(foundIds.filter(id => id && id.length > 8 && id !== myId)));
 
@@ -100,8 +92,12 @@ function analyzeFB() {
         resultArea.style.display = 'block';
         window.scrollTo({ top: resultArea.offsetTop - 20, behavior: 'smooth' });
     } else {
-        alert("找不到好友清單。請確保在 Facebook『首頁』按 Ctrl+U。");
+        alert("解析失敗。請確認您複製的是登入後的 Facebook『首頁』原始碼。");
     }
+}
+
+function decodeUnicode(str) {
+    return str.replace(/\\u([a-fA-F0-9]{4})/g, (m, val) => String.fromCharCode(parseInt(val, 16)));
 }
 
 function renderList(ids, nameMap) {
@@ -109,8 +105,9 @@ function renderList(ids, nameMap) {
     container.innerHTML = '';
 
     ids.forEach((id, index) => {
-        // 從 Map 中獲取姓名，如果沒有則顯示「Facebook 用戶」
-        const displayName = nameMap[id] || "Facebook 好友 (無法抓取姓名)";
+        let rawName = nameMap[id] || "Facebook 好友";
+        // 處理 Unicode 編碼 (如 \u6797 -> 林)
+        let displayName = decodeUnicode(rawName);
         
         const item = document.createElement('div');
         item.className = 'friend-item';
@@ -118,7 +115,7 @@ function renderList(ids, nameMap) {
             <div class="rank-badge">${index + 1}</div>
             <div class="flex-grow-1 ms-2">
                 <div class="fw-bold text-dark">${displayName}</div>
-                <div class="uid-text small text-muted">ID: ${id}</div>
+                <div class="uid-text">用戶 ID: ${id}</div>
             </div>
             <div>
                 <a href="https://www.facebook.com/${id}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">查看</a>
