@@ -15,134 +15,81 @@
             padding: 20px;
         }
         
-        .container {
-            max-width: 850px;
-            margin: 40px auto;
-        }
-        
-        /* 標題設定 */
-        h1.title {
-            text-align: center;
-            font-size: 2.4rem;
-            font-weight: bold;
-            color: #3b3b3b;
-            margin-bottom: 15px;
-            letter-spacing: 1px;
-        }
-        
-        /* 淺色分隔線 */
-        hr.divider {
-            border: 0;
-            border-top: 1px solid #f0f0f0;
-            margin: 20px 0;
-        }
-        
-        /* 紅色警告標語 */
-        .warning-text {
-            text-align: center;
-            color: #ff0000;
-            font-size: 1.1rem;
-            margin-bottom: 50px;
-        }
-        
-        /* 步驟區塊標題 */
-        h3.steps-title {
-            font-size: 1.4rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #444;
-        }
-        
-        /* 步驟清單 */
-        ol.steps-list {
-            font-size: 1.15rem;
-            line-height: 1.8;
-            padding-left: 25px;
-            color: #333;
-        }
-        
-        ol.steps-list li {
-            margin-bottom: 5px;
-        }
-        
-        /* 輸入框設定 */
-        .textarea-container {
-            margin-top: 5px;
-        }
+        .container { max-width: 850px; margin: 40px auto; }
+        h1.title { text-align: center; font-size: 2.4rem; font-weight: bold; color: #3b3b3b; margin-bottom: 15px; letter-spacing: 1px; }
+        hr.divider { border: 0; border-top: 1px solid #f0f0f0; margin: 20px 0; }
+        .warning-text { text-align: center; color: #ff0000; font-size: 1.1rem; margin-bottom: 50px; }
+        h3.steps-title { font-size: 1.4rem; font-weight: bold; margin-bottom: 20px; color: #444; }
+        ol.steps-list { font-size: 1.15rem; line-height: 1.8; padding-left: 25px; color: #333; }
+        ol.steps-list li { margin-bottom: 5px; }
+        .textarea-container { margin-top: 5px; }
         
         textarea#input {
-            width: 100%;
-            max-width: 600px;
-            height: 70px;
-            background-color: #f1f1f1;
-            border: 1px solid #dcdcdc;
-            border-radius: 6px;
-            padding: 12px 15px;
-            font-size: 1.05rem;
-            color: #333;
-            resize: vertical;
-            box-sizing: border-box;
-            outline: none;
+            width: 100%; max-width: 600px; height: 70px;
+            background-color: #f1f1f1; border: 1px solid #dcdcdc;
+            border-radius: 6px; padding: 12px 15px; font-size: 1.05rem;
+            color: #333; resize: vertical; box-sizing: border-box; outline: none;
         }
+        textarea#input::placeholder { color: #999; }
+        textarea#input:focus { border-color: #aaa; background-color: #fff; }
         
-        textarea#input::placeholder {
-            color: #999;
-        }
-
-        textarea#input:focus {
-            border-color: #aaa;
-            background-color: #fff;
-        }
-        
-        /* 隱藏元件用的 Class */
-        .d-none { 
-            display: none !important; 
-        }
+        /* 必須使用 hide 類名，因為外部分析腳本是綁定這個 class 來做顯示/隱藏切換 */
+        .hide { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- 主標題 -->
     <h1 class="title">找出在Facebook中最關心你的朋友</h1>
-    
-    <!-- 分隔線 -->
     <hr class="divider">
-    
-    <!-- 紅字警告 -->
     <div class="warning-text">
         ※請使用在自己的臉書帳號，不要去擅自或強迫查看他人的，以免造成法律或感情問題。※
     </div>
 
-    <!-- 步驟區塊 -->
-    <h3 class="steps-title">步驟</h3>
-    <ol class="steps-list">
-        <li>打開你的 Facebook 首頁 → 鼠標右鍵點擊頁面的空白處 → 查看網頁原始碼 (或按 Ctrl+U / ⌘+U)</li>
-        <li>全選(Ctrl+A) → 複製(Ctrl+C)</li>
-        <li>貼到 ▼
-            <div class="textarea-container">
-                <textarea id="input" placeholder="貼到這裡 (Ctrl + V)"></textarea>
-            </div>
-        </li>
-        
-        <!-- 隱藏的分析按鈕，保留給 JS 判定/顯示用 -->
-        <li id="analysis-button" class="d-none">
-            <input type="button" value="分析" style="margin-top:10px; padding: 5px 15px; cursor: pointer;" />
-        </li>
-    </ol>
+    <!-- 必須保留 id="steps" 供腳本讀取 -->
+    <div id="steps">
+        <h3 class="steps-title">步驟</h3>
+        <ol class="steps-list">
+            
+            <!-- 隱藏的 login 狀態，腳本需要它 -->
+            <li id="login" class="hide">請稍候...</li>
+            
+            <li id="view-src">
+                <div id="default-src">打開你的 Facebook 首頁 → 鼠標右鍵點擊頁面的空白處 → 查看網頁原始碼 (或按 Ctrl+U / ⌘+U)</div>
+                <div id="command-u-src" class="hide">打開你的 Facebook 首頁 → 按 ⌘+ U</div>
+                <div id="option-command-u-src" class="hide">打開你的 Facebook 首頁 → 按 option+⌘+ U → 單擊代碼區</div>
+                <div id="ctrl-u-src" class="hide">打開你的 Facebook 首頁 → 按 Ctrl + U</div>
+                <div id="developer-src" class="hide">打開你的 Facebook 首頁 → 按 Ctrl + U → 單擊代碼區</div>
+            </li>
+            
+            <li>全選(Ctrl+A) → 複製(Ctrl+C)</li>
+            
+            <li id="input-wrapper">貼到 ▼
+                <div class="textarea-container">
+                    <!-- 將 disabled 移除確保你可以點擊，腳本會接管貼上事件 -->
+                    <textarea id="input" placeholder="貼到這裡 (Ctrl + V)"></textarea>
+                </div>
+            </li>
+            
+            <li id="analysis-button" class="hide">
+                <input type="button" value="分析" style="margin-top:10px; padding: 5px 15px; cursor: pointer;" />
+            </li>
+        </ol>
+    </div>
 
-    <!-- 結果顯示區塊 (預設隱藏，分析完畢後由腳本動態插入內容) -->
-    <div id="result" class="d-none" style="margin-top: 40px; border-top: 2px solid #eee; padding-top: 20px;">
+    <!-- 載入動畫保留區 -->
+    <div id="loading-preload"></div>
+
+    <!-- 結果顯示區塊 -->
+    <div id="result" class="hide" style="margin-top: 40px; border-top: 2px solid #eee; padding-top: 20px;">
         <h4 style="font-weight:bold; color:#333;">結果如下</h4>
         <div id="result-content"></div>
     </div>
 </div>
 
-<!-- 核心設定與 JavaScript (保留原始分析邏輯與設定檔) -->
 <script>
-    // 若為舊版 IE 瀏覽器，則顯示手動分析按鈕
     if(navigator.userAgent.indexOf('MSIE') !== -1) {
-        document.querySelector("#analysis-button").classList.remove('d-none');
+        document.querySelector("#analysis-button").classList.remove('hide');
     }
 
     var MOBILE_DEVICE = "desktop classic",
