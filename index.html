@@ -1,67 +1,132 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <title>找出在Facebook中最關心你的朋友</title>
-  
-  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.1/css/bootstrap.min.css" />
-  <link rel="stylesheet" type="text/css" href="//assets.piliapp.com/v3/hzt5k_7ikos.css" crossorigin />
-</head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>找出在Facebook中最關心你的朋友</title>
+    
+    <!-- 引入現代化的 Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <!-- 保留原本的樣式與圖示 -->
+    <link rel="stylesheet" type="text/css" href="https://assets.piliapp.com/v3/hzt5k_7ikos.css" crossorigin/>
+    <link rel="apple-touch-icon" href="https://assets.piliapp.com/s3pxy/twemoji/touchicon/1f440.png" />
+    <link rel="shortcut icon" href="https://assets.piliapp.com/s3pxy/favicon.ico" />
 
+    <style>
+        body { background-color: #f8f9fa; }
+        .main-container {
+            max-width: 900px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+        .step-list { line-height: 1.8; font-size: 1.1rem; }
+        .highlight { color: #dc3545; font-weight: bold; }
+        textarea#input { min-height: 150px; resize: vertical; }
+    </style>
+</head>
 <body>
-  <div class="container" style="margin-top: 20px;">
-    <header class="page-header">
-      <h1>找出在Facebook中最關心你的朋友</h1>
+
+<div class="container main-container">
+    <!-- 導覽列 -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none">首頁</a></li>
+            <li class="breadcrumb-item active" aria-current="page">找出在Facebook中最關心你的朋友</li>
+        </ol>
+    </nav>
+
+    <!-- 標題與說明 -->
+    <header class="mb-4">
+        <h1 class="h2 text-primary fw-bold">找出在 Facebook 中最關心你的朋友</h1>
     </header>
-    
-    <div class="description">
-      <p style="color:red; font-weight:bold;">※請使用在自己的臉書帳號，不要去擅自或強迫查看他人的，以免造成法律或感情問題。※</p>
+
+    <div class="alert alert-info mb-4 shadow-sm" role="alert">
+        <p class="mb-1">這個工具可以透過分析 Facebook 的頁面原始碼，找出最常與你互動或最關注你的朋友清單。</p>
+        <p class="mb-0"><span class="highlight">※ 請使用在自己的臉書帳號，不要擅自或強迫查看他人的，以免造成隱私、法律或感情問題。※</span></p>
     </div>
-    
-    <div id="steps">
-      <h4>步驟</h4>
-      <ol>
-        <li id="login">請稍候...</li>
-        <li id="view-src">
-          <div>打開你的 Facebook 首頁 → 鼠標右鍵點擊頁面的空白處 → 查看網頁原始碼 (或按 Ctrl+U / ⌘+U)</div>
-        </li>
-        <li>全選(Ctrl+A) → 複製(Ctrl+C)</li>
-        <li id="input-wrapper">
-          貼到 ▼<br>
-          <textarea id="input" class="input span6 pull-left" disabled placeholder="貼到這裡 (Ctrl + V)"></textarea>
-        </li>
-        <li id='analysis-button' class="hide">
-          <input type="button" value="分析" />
-        </li>
-      </ol>
+
+    <!-- 操作步驟 -->
+    <div id="steps" class="mb-4">
+        <h4 class="fw-bold mb-3">操作步驟</h4>
+        <ol class="step-list ps-3">
+            <li id="login" class="text-muted">請稍候...</li>
+            <li id="view-src">
+                <div id="default-src" class="d-none">
+                    <a href="https://www.facebook.com/" target="_blank" rel="nofollow" class="btn btn-sm btn-outline-primary mb-1">打開你的 Facebook</a>
+                    <br>→ 鼠標右鍵點擊頁面的空白處 → 選擇「查看網頁原始碼」
+                </div>
+                <div id="command-u-src" class="d-none">
+                    <a href="https://www.facebook.com/" target="_blank" rel="nofollow" class="btn btn-sm btn-outline-primary mb-1">打開你的 Facebook</a>
+                    <br>→ 按 <code>⌘ + U</code>
+                </div>
+                <div id="option-command-u-src" class="d-none">
+                    <a href="https://www.facebook.com/" target="_blank" rel="nofollow" class="btn btn-sm btn-outline-primary mb-1">打開你的 Facebook</a>
+                    <br>→ 按 <code>Option + ⌘ + U</code> → 單擊代碼區
+                </div>
+                <div id="ctrl-u-src" class="d-none">
+                    <a href="https://www.facebook.com/" target="_blank" rel="nofollow" class="btn btn-sm btn-outline-primary mb-1">打開你的 Facebook</a>
+                    <br>→ 按 <code>Ctrl + U</code>
+                </div>
+                <div id="developer-src" class="d-none">
+                    <a href="https://www.facebook.com/" target="_blank" rel="nofollow" class="btn btn-sm btn-outline-primary mb-1">打開你的 Facebook</a>
+                    <br>→ 按 <code>Ctrl + U</code> → 單擊代碼區
+                </div>
+            </li>
+            <li>在原始碼頁面全選 (<code>Ctrl + A</code>) → 複製 (<code>Ctrl + C</code>)</li>
+            <li id="input-wrapper" class="mt-3">
+                <label for="input" class="form-label fw-bold">貼到下方文字框 ▼</label>
+                <textarea id="input" class="form-control" disabled placeholder="貼到這裡 (Ctrl + V)"></textarea>
+            </li>
+            <li id='analysis-button' class="d-none mt-3">
+                <input type="button" class="btn btn-primary px-4" value="開始分析" />
+            </li>
+        </ol>
     </div>
-    
+
+    <!-- 載入動畫保留區 -->
     <div id="loading-preload"></div>
 
-    <div id="result" class="hide">
-      <h4>結果如下</h4>
-      <div class="clearfix" id="result-content" data-loading='<div class="loading"><span></span></div>'></div>
+    <!-- 結果顯示區 -->
+    <div id="result" class="d-none mt-5">
+        <h4 class="fw-bold text-success border-bottom pb-2 mb-3">🎉 分析結果</h4>
+        <div class="clearfix" id="result-content" data-loading='<div class="spinner-border text-primary" role="status"><span class="visually-hidden">載入中...</span></div>'></div>
     </div>
-  </div>
 
-  <script>
+    <!-- 頁尾 -->
+    <footer class="mt-5 pt-3 border-top text-center text-muted small">
+        <div class="disclaimer">此頁面與 Facebook 無關。Facebook 是 Facebook 公司的註冊商標。</div>
+    </footer>
+</div>
+
+<!-- 核心設定與 JavaScript (保留原始分析邏輯) -->
+<script>
+    // 確保舊版瀏覽器相容按鈕顯示
+    if(navigator.userAgent.indexOf('MSIE') !== -1) {
+        document.querySelector("#analysis-button").classList.remove('d-none');
+    }
+
     var MOBILE_DEVICE = "desktop classic",
         IS_DESKTOP = true,
         APP_URI = '/facebook/friends-list/',
         I18N = {
-          login_first: "請先Facebook登錄。",
-          login_desc: "Facebook 改變規則了，現在要登入才行。",
-          error_general: "這不是一個有效的頁面的源代碼。請重新按照步驟。",
-          error_no_friends: "抱歉!好友列表是空的。",
-          error_visit_www: "請訪問 https://www.facebook.com 而不是 https://m.facebook.com",
-          error_old_browser: "您正在使用的瀏覽器不受 Facebook 支持。請升級至較新的瀏覽器。",
-          parsing_error: "HTML代碼解析錯誤。請告知我們。"
+            login_first: "請先Facebook登錄。",
+            login_desc: "Facebook 改變規則了，現在要登入才行。",
+            error_general: "這不是一個有效的頁面的源代碼。請重新按照步驟。",
+            error_no_friends: "抱歉!好友列表是空的。",
+            error_visit_www: "請訪問 https://www.facebook.com 而不是 https://m.facebook.com",
+            error_old_browser: "您正在使用的瀏覽器不受 Facebook 支持。請升級至較新的瀏覽器。",
+            parsing_error: "HTML代碼解析錯誤。請告知我們。如果您能提供HTML源代碼，我們可以進行進一步分析。請放心，您的代碼將僅用於故障排除目的，並會嚴格保密。"
         },
         FB_APP_ID = '411032122400925',
         FB_APP_VER = 'v6.0',
         FB_LANG = 'zh_TW',
         SOURCE_ONLY = 1;
-  </script>
-  <script src="//assets.piliapp.com/v3/asand_9xuix.js" crossorigin></script>
+</script>
+<!-- 載入原始核心分析指令碼 -->
+<script src="https://assets.piliapp.com/v3/asand_9xuix.js" crossorigin></script>
 </body>
 </html>
