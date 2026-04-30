@@ -1,169 +1,67 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FB 互動排行榜 - 終極外掛版</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f4f7f9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #1c1e21; }
-        .hero-section { background: linear-gradient(135deg, #0866FF, #004ecc); color: white; padding: 60px 20px; text-align: center; border-radius: 0 0 30px 30px; box-shadow: 0 4px 15px rgba(8, 102, 255, 0.2); }
-        .main-card { border: none; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-top: -30px; background: white; padding: 30px; }
-        .code-box { background-color: #282c34; color: #abb2bf; padding: 20px; border-radius: 12px; font-family: Consolas, monospace; font-size: 13px; overflow-x: auto; max-height: 250px; border: 1px solid #1e2227; }
-        .btn-copy { background-color: #0866FF; color: white; font-weight: bold; border-radius: 50px; padding: 10px 30px; transition: 0.3s; border: none; }
-        .btn-copy:hover { background-color: #0055d4; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(8,102,255,0.3); }
-        .step-box { background: #f0f2f5; padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #0866FF; }
-        .step-num { font-size: 1.5rem; font-weight: 900; color: #0866FF; margin-right: 10px; }
-    </style>
+  <meta charset="utf-8" />
+  <title>找出在Facebook中最關心你的朋友</title>
+  
+  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.1/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="//assets.piliapp.com/v3/hzt5k_7ikos.css" crossorigin />
 </head>
+
 <body>
-
-    <!-- 頂部視覺區 -->
-    <div class="hero-section">
-        <h1 class="fw-bold mb-3">Facebook 互動排行榜 🏆</h1>
-        <p class="fs-5 opacity-75">100% 突破臉書限制，直接在畫面顯示真實姓名！</p>
-    </div>
-
-    <div class="container pb-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card main-card">
-                    
-                    <h4 class="fw-bold mb-4">🚀 第一步：取得專屬腳本</h4>
-                    <p class="text-muted">點擊下方按鈕，將破解腳本複製到剪貼簿。</p>
-                    
-                    <div class="position-relative mb-4">
-                        <pre class="code-box" id="scriptCode">(async function() {
-    const style = document.createElement('style');
-    style.innerHTML = `
-        .friend-card { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #eee; background: #fff; }
-        .friend-card:hover { background: #f8f9fa; }
-        .rank-number { width: 40px; font-weight: bold; color: #0866FF; font-size: 18px; text-align: center; }
-        .avatar-img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 1px solid #ddd; }
-        .flex-grow-1 { flex-grow: 1; }
-        .friend-name { font-weight: bold; font-size: 15px; margin-bottom: 2px; color: #1c1e21; }
-        .text-secondary { color: #65676b; font-size: 12px; font-family: monospace; }
-        .btn-view { padding: 6px 16px; border: 1px solid #0866FF; color: #0866FF; border-radius: 20px; text-decoration: none; font-size: 13px; font-weight: bold; transition: 0.2s; background: transparent; }
-        .btn-view:hover { background: #e7f3ff; }
-        .ranking-container { position: fixed; top: 70px; right: 20px; width: 360px; max-height: 80vh; background: #fff; z-index: 999999; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; font-family: sans-serif; }
-        .ranking-header { padding: 15px 20px; background: #0866FF; color: white; display: flex; justify-content: space-between; align-items: center; }
-    `;
-    document.head.appendChild(style);
-
-    const container = document.createElement('div');
-    container.className = 'ranking-container';
-    container.innerHTML = `
-        <div class="ranking-header">
-            <h4 style="margin:0; font-size:16px;">🏆 互動排行榜</h4>
-            <span style="font-size:12px; background:rgba(255,255,255,0.2); padding:3px 10px; border-radius:12px;">載入中 <span id="successRate">0</span>/30</span>
-        </div>
-        <div id="friendList" style="overflow-y: auto; flex-grow: 1; background: #f4f7f9;"></div>
-        <button onclick="this.parentElement.remove()" style="padding:12px; background:#fff; border:none; border-top:1px solid #eee; cursor:pointer; font-weight:bold; color:#65676b; font-size: 14px; transition:0.2s;">關閉視窗</button>
-    `;
-    document.body.appendChild(container);
-
-    const listContainer = document.getElementById('friendList');
-    const rateLabel = document.getElementById('successRate');
-    const html = document.documentElement.innerHTML;
-    const match = html.match(/"activeList":\[(.*?)\]/) || html.match(/"list":\["(.*?)"\]/);
+  <div class="container" style="margin-top: 20px;">
+    <header class="page-header">
+      <h1>找出在Facebook中最關心你的朋友</h1>
+    </header>
     
-    if (!match) {
-        listContainer.innerHTML = '<div style="padding:20px; text-align:center; color:#65676b;">找不到排名數據，請確保您在 Facebook 首頁！</div>';
-        return;
-    }
-
-    let ids = match[1].replace(/["']/g, '').split(',').map(id => id.split('-')[0]);
-    const myId = document.cookie.match(/c_user=(\d+)/)?.[1] || "";
-    let cleanIds = [...new Set(ids.filter(id => id.length > 8 && id !== myId))].slice(0, 30);
-
-    for (let i = 0; i < cleanIds.length; i++) {
-        let id = cleanIds[i];
-        let name = "載入中...";
-        rateLabel.innerText = i + 1;
-        
-        try {
-            let res = await fetch('/' + id);
-            let text = await res.text();
-            let titleMatch = text.match(/<title>(.*?)<\\/title>/);
-            if (titleMatch) name = titleMatch[1].split('|')[0].replace('Facebook', '').trim();
-        } catch(e) { name = "Facebook 用戶"; }
-
-        let avatarName = name === "Facebook 用戶" ? "FB" : name;
-        let avatarUrl = "https://ui-avatars.com/api/?name=" + encodeURIComponent(avatarName) + "&background=random&color=fff&size=100";
-
-        listContainer.insertAdjacentHTML('beforeend', `
-            <div class="friend-card">
-                <div class="rank-number">${i + 1}</div>
-                <img src="${avatarUrl}" class="avatar-img">
-                <div class="flex-grow-1">
-                    <div class="friend-name">${name}</div>
-                    <div class="text-secondary">UID: ${id}</div>
-                </div>
-                <a href="/${id}" target="_blank" class="btn-view">查看</a>
-            </div>
-        `);
-        await new Promise(r => setTimeout(r, 400 + Math.random() * 400));
-    }
-    rateLabel.parentElement.innerHTML = "✅ 解析完成";
-})();</pre>
-                        <div class="text-center mt-3">
-                            <button class="btn-copy" onclick="copyScript()" id="copyBtn">
-                                📋 一鍵複製代碼
-                            </button>
-                        </div>
-                    </div>
-
-                    <hr class="my-5">
-
-                    <h4 class="fw-bold mb-4">📖 第二步：如何使用？</h4>
-                    
-                    <div class="step-box d-flex align-items-center">
-                        <div class="step-num">1</div>
-                        <div>打開電腦版 <a href="https://www.facebook.com/" target="_blank" class="text-decoration-none fw-bold">Facebook 首頁</a> 並登入。</div>
-                    </div>
-                    
-                    <div class="step-box d-flex align-items-center">
-                        <div class="step-num">2</div>
-                        <div>在鍵盤上按下 <b>F12</b> 鍵 (Mac 為 <code>Cmd + Option + J</code>) 打開開發者工具。</div>
-                    </div>
-
-                    <div class="step-box d-flex align-items-center">
-                        <div class="step-num">3</div>
-                        <div>在上方選單找到 <b>Console (主控台)</b>。</div>
-                    </div>
-
-                    <div class="step-box d-flex align-items-center">
-                        <div class="step-num">4</div>
-                        <div>在最下方閃爍的游標處，<b>貼上 (Ctrl+V)</b> 剛剛複製的代碼，然後按 <b>Enter</b>！</div>
-                    </div>
-                    
-                    <p class="text-center text-success fw-bold mt-4">🎉 接著你就會看到畫面右上角彈出專屬排行榜，並自動抓取真實姓名！</p>
-
-                </div>
-                <div class="text-center mt-4 text-muted small">
-                    本工具僅供學術研究使用，不收集任何使用者隱私數據。<br>Designed for GitHub Pages.
-                </div>
-            </div>
-        </div>
+    <div class="description">
+      <p style="color:red; font-weight:bold;">※請使用在自己的臉書帳號，不要去擅自或強迫查看他人的，以免造成法律或感情問題。※</p>
     </div>
+    
+    <div id="steps">
+      <h4>步驟</h4>
+      <ol>
+        <li id="login">請稍候...</li>
+        <li id="view-src">
+          <div>打開你的 Facebook 首頁 → 鼠標右鍵點擊頁面的空白處 → 查看網頁原始碼 (或按 Ctrl+U / ⌘+U)</div>
+        </li>
+        <li>全選(Ctrl+A) → 複製(Ctrl+C)</li>
+        <li id="input-wrapper">
+          貼到 ▼<br>
+          <textarea id="input" class="input span6 pull-left" disabled placeholder="貼到這裡 (Ctrl + V)"></textarea>
+        </li>
+        <li id='analysis-button' class="hide">
+          <input type="button" value="分析" />
+        </li>
+      </ol>
+    </div>
+    
+    <div id="loading-preload"></div>
 
-    <script>
-        function copyScript() {
-            const code = document.getElementById("scriptCode").innerText;
-            const btn = document.getElementById("copyBtn");
-            
-            navigator.clipboard.writeText(code).then(() => {
-                btn.innerHTML = "✅ 複製成功！快去 FB 執行吧";
-                btn.style.backgroundColor = "#28a745";
-                
-                setTimeout(() => {
-                    btn.innerHTML = "📋 一鍵複製代碼";
-                    btn.style.backgroundColor = "#0866FF";
-                }, 3000);
-            }).catch(err => {
-                alert("複製失敗，請手動框選複製！");
-            });
-        }
-    </script>
+    <div id="result" class="hide">
+      <h4>結果如下</h4>
+      <div class="clearfix" id="result-content" data-loading='<div class="loading"><span></span></div>'></div>
+    </div>
+  </div>
+
+  <script>
+    var MOBILE_DEVICE = "desktop classic",
+        IS_DESKTOP = true,
+        APP_URI = '/facebook/friends-list/',
+        I18N = {
+          login_first: "請先Facebook登錄。",
+          login_desc: "Facebook 改變規則了，現在要登入才行。",
+          error_general: "這不是一個有效的頁面的源代碼。請重新按照步驟。",
+          error_no_friends: "抱歉!好友列表是空的。",
+          error_visit_www: "請訪問 https://www.facebook.com 而不是 https://m.facebook.com",
+          error_old_browser: "您正在使用的瀏覽器不受 Facebook 支持。請升級至較新的瀏覽器。",
+          parsing_error: "HTML代碼解析錯誤。請告知我們。"
+        },
+        FB_APP_ID = '411032122400925',
+        FB_APP_VER = 'v6.0',
+        FB_LANG = 'zh_TW',
+        SOURCE_ONLY = 1;
+  </script>
+  <script src="//assets.piliapp.com/v3/asand_9xuix.js" crossorigin></script>
 </body>
 </html>
