@@ -4,112 +4,71 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>找出在Facebook中最關心你的朋友</title>
-    
     <style>
-        /* 基礎全域設定 */
-        body {
-            font-family: "Helvetica Neue", Helvetica, Arial, "PingFang TC", "微軟正黑體", sans-serif;
-            color: #333;
-            background-color: #fff;
-            margin: 0;
-            padding: 20px;
-        }
-        
-        .container { max-width: 850px; margin: 40px auto; }
-        h1.title { text-align: center; font-size: 2.4rem; font-weight: bold; color: #3b3b3b; margin-bottom: 15px; letter-spacing: 1px; }
-        hr.divider { border: 0; border-top: 1px solid #f0f0f0; margin: 20px 0; }
-        .warning-text { text-align: center; color: #ff0000; font-size: 1.1rem; margin-bottom: 50px; }
-        h3.steps-title { font-size: 1.4rem; font-weight: bold; margin-bottom: 20px; color: #444; }
-        ol.steps-list { font-size: 1.15rem; line-height: 1.8; padding-left: 25px; color: #333; }
-        ol.steps-list li { margin-bottom: 5px; }
-        .textarea-container { margin-top: 5px; }
-        
-        textarea#input {
-            width: 100%; max-width: 600px; height: 70px;
-            background-color: #f1f1f1; border: 1px solid #dcdcdc;
-            border-radius: 6px; padding: 12px 15px; font-size: 1.05rem;
-            color: #333; resize: vertical; box-sizing: border-box; outline: none;
-        }
-        textarea#input::placeholder { color: #999; }
-        textarea#input:focus { border-color: #aaa; background-color: #fff; }
-        
-        /* 必須使用 hide 類名，因為外部分析腳本是綁定這個 class 來做顯示/隱藏切換 */
+        body { font-family: "微軟正黑體", sans-serif; background: #fafafa; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: 20px auto; background: #fff; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
+        h1 { text-align: center; color: #2c3e50; font-size: 28px; }
+        .warning { color: #d35400; text-align: center; font-weight: bold; margin: 20px 0; }
+        ol { line-height: 2; font-size: 16px; }
+        textarea { width: 100%; height: 200px; padding: 15px; font-size: 14px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; resize: vertical; }
+        .analyze-btn { background: #3498db; color: white; border: none; padding: 12px 30px; font-size: 18px; cursor: pointer; border-radius: 5px; margin-top: 20px; font-weight: bold; }
+        .analyze-btn:hover { background: #2980b9; }
         .hide { display: none !important; }
+        #result { margin-top: 40px; padding-top: 20px; border-top: 2px solid #eee; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 class="title">找出在Facebook中最關心你的朋友</h1>
-    <hr class="divider">
-    <div class="warning-text">
-        ※請使用在自己的臉書帳號，不要去擅自或強迫查看他人的，以免造成法律或感情問題。※
-    </div>
+    <h1>找出在Facebook中最關心你的朋友</h1>
+    <div class="warning">※請使用在自己的臉書帳號，不要去擅自或強迫查看他人的，以免造成法律或感情問題。※</div>
 
-    <!-- 必須保留 id="steps" 供腳本讀取 -->
     <div id="steps">
-        <h3 class="steps-title">步驟</h3>
-        <ol class="steps-list">
-            
-            <!-- 隱藏的 login 狀態，腳本需要它 -->
+        <h3>操作步驟</h3>
+        <ol>
+            <!-- 隱藏腳本需要的標籤 -->
             <li id="login" class="hide">請稍候...</li>
             
-            <li id="view-src">
-                <div id="default-src">打開你的 Facebook 首頁 → 鼠標右鍵點擊頁面的空白處 → 查看網頁原始碼 (或按 Ctrl+U / ⌘+U)</div>
-                <div id="command-u-src" class="hide">打開你的 Facebook 首頁 → 按 ⌘+ U</div>
-                <div id="option-command-u-src" class="hide">打開你的 Facebook 首頁 → 按 option+⌘+ U → 單擊代碼區</div>
-                <div id="ctrl-u-src" class="hide">打開你的 Facebook 首頁 → 按 Ctrl + U</div>
-                <div id="developer-src" class="hide">打開你的 Facebook 首頁 → 按 Ctrl + U → 單擊代碼區</div>
+            <li id="view-src">打開你的 Facebook 首頁 → 點擊右鍵選擇「查看網頁原始碼」(或按 Ctrl+U)</li>
+            <li>在原始碼頁面全選 (Ctrl+A) → 複製 (Ctrl+C)</li>
+            <li id="input-wrapper">
+                貼到下方框框 ▼
+                <!-- 文字框已解鎖，可直接貼上 -->
+                <textarea id="input" placeholder="請將原始碼貼到這裡 (Ctrl + V)"></textarea>
             </li>
             
-            <li>全選(Ctrl+A) → 複製(Ctrl+C)</li>
-            
-            <li id="input-wrapper">貼到 ▼
-                <div class="textarea-container">
-                    <!-- 將 disabled 移除確保你可以點擊，腳本會接管貼上事件 -->
-                    <textarea id="input" placeholder="貼到這裡 (Ctrl + V)"></textarea>
-                </div>
-            </li>
-            
-            <li id="analysis-button" class="hide">
-                <input type="button" value="分析" style="margin-top:10px; padding: 5px 15px; cursor: pointer;" />
+            <!-- 按鈕已強制顯示，貼上後請手動點擊 -->
+            <li id="analysis-button" style="list-style: none; text-align: center;">
+                <input type="button" class="analyze-btn" value="開始分析" />
             </li>
         </ol>
     </div>
 
-    <!-- 載入動畫保留區 -->
-    <div id="loading-preload"></div>
-
-    <!-- 結果顯示區塊 -->
-    <div id="result" class="hide" style="margin-top: 40px; border-top: 2px solid #eee; padding-top: 20px;">
-        <h4 style="font-weight:bold; color:#333;">結果如下</h4>
+    <!-- 結果顯示區 -->
+    <div id="result" class="hide">
+        <h2 style="color: #27ae60;">🎉 分析結果</h2>
         <div id="result-content"></div>
     </div>
 </div>
 
+<!-- 系統核心設定 -->
 <script>
-    if(navigator.userAgent.indexOf('MSIE') !== -1) {
-        document.querySelector("#analysis-button").classList.remove('hide');
-    }
-
     var MOBILE_DEVICE = "desktop classic",
         IS_DESKTOP = true,
         APP_URI = '/facebook/friends-list/',
         I18N = {
-            login_first: "請先Facebook登錄。",
-            login_desc: "Facebook 改變規則了，現在要登入才行。",
-            error_general: "這不是一個有效的頁面的源代碼。請重新按照步驟。",
-            error_no_friends: "抱歉!好友列表是空的。",
-            error_visit_www: "請訪問 https://www.facebook.com 而不是 https://m.facebook.com",
-            error_old_browser: "您正在使用的瀏覽器不受 Facebook 支持。請升級至較新的瀏覽器。",
-            parsing_error: "HTML代碼解析錯誤。請告知我們。"
+            login_first: "請先登入 Facebook。",
+            error_general: "這不是有效的原始碼，請重新複製。",
+            error_no_friends: "抱歉！好友列表是空的。",
+            parsing_error: "解析錯誤。這通常是因為 Facebook 已經更改了網頁結構。"
         },
         FB_APP_ID = '411032122400925',
         FB_APP_VER = 'v6.0',
         FB_LANG = 'zh_TW',
         SOURCE_ONLY = 1;
 </script>
-<!-- 載入核心解析腳本 -->
+
+<!-- 載入外部分析腳本 -->
 <script src="https://assets.piliapp.com/v3/asand_9xuix.js" crossorigin></script>
 
 </body>
