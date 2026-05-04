@@ -1,75 +1,372 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>找出在Facebook中最關心你的朋友</title>
-    <style>
-        body { font-family: "微軟正黑體", sans-serif; background: #fafafa; padding: 20px; color: #333; }
-        .container { max-width: 800px; margin: 20px auto; background: #fff; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
-        h1 { text-align: center; color: #2c3e50; font-size: 28px; }
-        .warning { color: #d35400; text-align: center; font-weight: bold; margin: 20px 0; }
-        ol { line-height: 2; font-size: 16px; }
-        textarea { width: 100%; height: 200px; padding: 15px; font-size: 14px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; resize: vertical; }
-        .analyze-btn { background: #3498db; color: white; border: none; padding: 12px 30px; font-size: 18px; cursor: pointer; border-radius: 5px; margin-top: 20px; font-weight: bold; }
-        .analyze-btn:hover { background: #2980b9; }
-        .hide { display: none !important; }
-        #result { margin-top: 40px; padding-top: 20px; border-top: 2px solid #eee; }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Facebook 朋友關注分析</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --card: #21243a;
+    --accent: #4f7fff;
+    --accent2: #7c5cfc;
+    --text: #e8eaf6;
+    --muted: #7b80a0;
+    --border: rgba(255,255,255,0.08);
+    --radius: 14px;
+  }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 80px;
+  }
+
+  /* gradient mesh bg */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 600px 400px at 10% 20%, rgba(79,127,255,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 500px at 90% 70%, rgba(124,92,252,0.10) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { position: relative; z-index: 1; width: 100%; max-width: 760px; }
+
+  header { text-align: center; margin-bottom: 48px; }
+  header .icon { font-size: 48px; margin-bottom: 16px; }
+  header h1 {
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(120deg, #fff 0%, #a0b4ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+  header p { color: var(--muted); font-size: 14px; line-height: 1.6; max-width: 480px; margin: 0 auto; }
+
+  .notice {
+    background: rgba(79,127,255,0.1);
+    border: 1px solid rgba(79,127,255,0.25);
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    font-size: 13px;
+    color: #a0b4ff;
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+
+  .steps {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+  .steps h2 { font-size: 15px; font-weight: 700; margin-bottom: 20px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .step {
+    display: flex; gap: 16px; align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .step:last-child { margin-bottom: 0; }
+  .step-num {
+    width: 28px; height: 28px; min-width: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+  }
+  .step-text { font-size: 14px; line-height: 1.7; padding-top: 3px; color: var(--text); }
+  .step-text a { color: #7c9fff; text-decoration: none; }
+  .step-text a:hover { text-decoration: underline; }
+  .step-text kbd {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 7px;
+    font-size: 12px;
+    font-family: monospace;
+    color: #c0c8ff;
+  }
+
+  .input-area {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .input-area label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 10px; }
+  textarea {
+    width: 100%;
+    height: 160px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: monospace;
+    padding: 14px;
+    resize: vertical;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--muted); }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    margin-top: 14px;
+    letter-spacing: 0.3px;
+  }
+  .btn:hover { opacity: 0.9; }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .error {
+    background: rgba(255,80,80,0.1);
+    border: 1px solid rgba(255,80,80,0.3);
+    border-radius: 10px;
+    padding: 14px 18px;
+    color: #ff8888;
+    font-size: 14px;
+    margin-top: 16px;
+    display: none;
+  }
+  .error.show { display: block; }
+
+  /* Results */
+  #result { margin-top: 36px; display: none; }
+  #result.show { display: block; }
+  #result h2 {
+    font-size: 18px; font-weight: 700; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  #result h2 span { font-size: 13px; font-weight: 400; color: var(--muted); }
+
+  .friends-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+  }
+
+  .friend-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: border-color 0.2s, transform 0.2s;
+    animation: fadeUp 0.3s ease both;
+  }
+  .friend-card:hover {
+    border-color: rgba(79,127,255,0.35);
+    transform: translateY(-2px);
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .friend-avatar {
+    width: 44px; height: 44px; min-width: 44px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--card);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .friend-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  .friend-info { min-width: 0; }
+  .friend-rank { font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 2px; }
+  .friend-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .friend-id   { font-size: 11px; color: var(--muted); }
+
+  .top-badge {
+    border-color: rgba(255,200,50,0.35) !important;
+    background: linear-gradient(135deg, rgba(255,200,50,0.06), rgba(255,150,30,0.04));
+  }
+  .top-badge .friend-rank { color: #ffc832; }
+
+  footer { margin-top: 60px; text-align: center; font-size: 12px; color: var(--muted); }
+</style>
 </head>
 <body>
+<div class="wrap">
 
-<div class="container">
-    <h1>找出在Facebook中最關心你的朋友</h1>
-    <div class="warning">※請使用在自己的臉書帳號，不要去擅自或強迫查看他人的，以免造成法律或感情問題。※</div>
+  <header>
+    <div class="icon">👁️</div>
+    <h1>Facebook 朋友關注分析</h1>
+    <p>透過解析 Facebook 原始碼，找出臉書演算法中最關注你的朋友排名。</p>
+  </header>
 
-    <div id="steps">
-        <h3>操作步驟</h3>
-        <ol>
-            <!-- 隱藏腳本需要的標籤 -->
-            <li id="login" class="hide">請稍候...</li>
-            
-            <li id="view-src">打開你的 Facebook 首頁 → 點擊右鍵選擇「查看網頁原始碼」(或按 Ctrl+U)</li>
-            <li>在原始碼頁面全選 (Ctrl+A) → 複製 (Ctrl+C)</li>
-            <li id="input-wrapper">
-                貼到下方框框 ▼
-                <!-- 文字框已解鎖，可直接貼上 -->
-                <textarea id="input" placeholder="請將原始碼貼到這裡 (Ctrl + V)"></textarea>
-            </li>
-            
-            <!-- 按鈕已強制顯示，貼上後請手動點擊 -->
-            <li id="analysis-button" style="list-style: none; text-align: center;">
-                <input type="button" class="analyze-btn" value="開始分析" />
-            </li>
-        </ol>
+  <div class="notice">
+    ⚠️ 請僅用於自己的 Facebook 帳號，請勿擅自查看他人資料，以免造成法律或感情問題。
+  </div>
+
+  <div class="steps">
+    <h2>操作步驟</h2>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">前往 <a href="https://www.facebook.com/" target="_blank" rel="nofollow">www.facebook.com</a> 並確認已登入</div>
     </div>
-
-    <!-- 結果顯示區 -->
-    <div id="result" class="hide">
-        <h2 style="color: #27ae60;">🎉 分析結果</h2>
-        <div id="result-content"></div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">按 <kbd>Ctrl</kbd>+<kbd>U</kbd>（Windows）或 <kbd>⌘</kbd>+<kbd>U</kbd>（Mac）開啟原始碼，或右鍵 → 「檢視網頁原始碼」</div>
     </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">按 <kbd>Ctrl</kbd>+<kbd>A</kbd> 全選，再按 <kbd>Ctrl</kbd>+<kbd>C</kbd> 複製</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text">貼入下方欄位並點擊「分析」</div>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <label for="input">將原始碼貼入此處</label>
+    <textarea id="input" placeholder="貼入 Facebook 首頁原始碼 (Ctrl+V)..."></textarea>
+    <button class="btn" id="analyzeBtn" onclick="analyze()">🔍 開始分析</button>
+    <div class="error" id="errorBox"></div>
+  </div>
+
+  <div id="result">
+    <h2>分析結果 <span id="resultCount"></span></h2>
+    <div class="friends-grid" id="friendsGrid"></div>
+  </div>
+
+  <footer>此頁面與 Facebook 無關。Facebook 是 Meta 的註冊商標。</footer>
+
 </div>
-
-<!-- 系統核心設定 -->
 <script>
-    var MOBILE_DEVICE = "desktop classic",
-        IS_DESKTOP = true,
-        APP_URI = '/facebook/friends-list/',
-        I18N = {
-            login_first: "請先登入 Facebook。",
-            error_general: "這不是有效的原始碼，請重新複製。",
-            error_no_friends: "抱歉！好友列表是空的。",
-            parsing_error: "解析錯誤。這通常是因為 Facebook 已經更改了網頁結構。"
-        },
-        FB_APP_ID = '411032122400925',
-        FB_APP_VER = 'v6.0',
-        FB_LANG = 'zh_TW',
-        SOURCE_ONLY = 1;
+function showError(msg) {
+  var el = document.getElementById('errorBox');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function clearError() {
+  document.getElementById('errorBox').classList.remove('show');
+}
+
+function analyze() {
+  clearError();
+  var src = document.getElementById('input').value.trim();
+  if (!src) { showError('請先貼入 Facebook 原始碼。'); return; }
+
+  // --- Parse friend IDs from Facebook source ---
+  // Facebook embeds ordered friend list in various formats across versions.
+  // Strategy: collect all numeric IDs from known patterns, deduplicate in order.
+
+  var ids = [];
+  var seen = {};
+
+  function addId(id) {
+    if (id && id.length >= 5 && id.length <= 20 && !seen[id]) {
+      seen[id] = true;
+      ids.push(id);
+    }
+  }
+
+  // Pattern 1: ordered_friend array / list in JSON-like blobs  e.g. "uid":123456
+  var p1 = src.matchAll(/"(?:uid|userID|id|userId)"\s*:\s*"?(\d{5,20})"?/g);
+  for (var m of p1) addId(m[1]);
+
+  // Pattern 2: friendIds array  e.g. [123,456,...]
+  var p2 = src.match(/(?:friendIDs|friend_ids|ordered_friend_list|orderedFriendList)[^[]*\[([^\]]{0,5000})\]/);
+  if (p2) {
+    var nums = p2[1].match(/\d{5,20}/g) || [];
+    nums.forEach(addId);
+  }
+
+  // Pattern 3: profile links  href="/profile.php?id=XXXXXXX" or /name (less reliable, fallback)
+  var p3 = src.matchAll(/profile\.php\?id=(\d{5,20})/g);
+  for (var m of p3) addId(m[1]);
+
+  // Pattern 4: plain numeric sequences after "list":[  (common in newer FB source)
+  var p4 = src.matchAll(/"list"\s*:\s*\[([^\]]{0,8000})\]/g);
+  for (var m of p4) {
+    var nums2 = m[1].match(/\d{5,20}/g) || [];
+    nums2.forEach(addId);
+  }
+
+  if (ids.length === 0) {
+    showError('找不到朋友列表。請確認您貼入的是 Facebook 首頁（www.facebook.com）的完整原始碼，且已登入帳號。');
+    return;
+  }
+
+  renderResults(ids);
+}
+
+function renderResults(ids) {
+  var grid = document.getElementById('friendsGrid');
+  var result = document.getElementById('result');
+  grid.innerHTML = '';
+
+  document.getElementById('resultCount').textContent = '共找到 ' + ids.length + ' 位';
+  result.classList.add('show');
+
+  var avatarColors = ['#4f7fff','#7c5cfc','#ff6b6b','#ffa94d','#20c997','#74c0fc'];
+
+  ids.forEach(function(id, i) {
+    var card = document.createElement('div');
+    card.className = 'friend-card' + (i < 3 ? ' top-badge' : '');
+    card.style.animationDelay = Math.min(i * 40, 800) + 'ms';
+
+    var rank = i + 1;
+    var color = avatarColors[i % avatarColors.length];
+    var rankLabel = rank === 1 ? '🥇 第 1 名' : rank === 2 ? '🥈 第 2 名' : rank === 3 ? '🥉 第 3 名' : '第 ' + rank + ' 名';
+
+    card.innerHTML =
+      '<div class="friend-avatar">' +
+        '<img src="https://graph.facebook.com/' + id + '/picture?type=square" ' +
+             'onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'" ' +
+             'alt="" loading="lazy" />' +
+        '<span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:' + color + ';color:#fff;font-weight:700;font-size:16px;">' +
+          rank + '</span>' +
+      '</div>' +
+      '<div class="friend-info">' +
+        '<div class="friend-rank">' + rankLabel + '</div>' +
+        '<div class="friend-name">' +
+          '<a href="https://www.facebook.com/profile.php?id=' + id + '" target="_blank" rel="nofollow" ' +
+             'style="color:inherit;text-decoration:none;">' + id + '</a>' +
+        '</div>' +
+        '<div class="friend-id">UID: ' + id + '</div>' +
+      '</div>';
+
+    grid.appendChild(card);
+  });
+
+  result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 </script>
-
-<!-- 載入外部分析腳本 -->
-<script src="https://assets.piliapp.com/v3/asand_9xuix.js" crossorigin></script>
-
 </body>
 </html>
