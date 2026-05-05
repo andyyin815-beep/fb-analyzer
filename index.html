@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -6,240 +7,227 @@
 <title>Facebook 朋友關注分析</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
-
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --card: #21243a;
-    --accent: #4f7fff;
-    --accent2: #7c5cfc;
-    --text: #e8eaf6;
-    --muted: #7b80a0;
-    --border: rgba(255,255,255,0.08);
-    --radius: 14px;
+    --bg: #0f1117; --surface: #1a1d27; --card: #21243a;
+    --accent: #4f7fff; --accent2: #7c5cfc;
+    --text: #e8eaf6; --muted: #7b80a0; --border: rgba(255,255,255,0.08); --radius: 14px;
   }
-
   body {
     font-family: 'Noto Sans TC', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 20px 80px;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; padding: 40px 20px 80px;
   }
-
-  /* gradient mesh bg */
   body::before {
-    content: '';
-    position: fixed; inset: 0;
+    content: ''; position: fixed; inset: 0;
     background:
       radial-gradient(ellipse 600px 400px at 10% 20%, rgba(79,127,255,0.12) 0%, transparent 70%),
       radial-gradient(ellipse 500px 500px at 90% 70%, rgba(124,92,252,0.10) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
+    pointer-events: none; z-index: 0;
   }
-
-  .wrap { position: relative; z-index: 1; width: 100%; max-width: 760px; }
-
+  .wrap { position: relative; z-index: 1; width: 100%; max-width: 780px; }
   header { text-align: center; margin-bottom: 48px; }
-  header .icon { font-size: 48px; margin-bottom: 16px; }
+  .header-icon {
+    width: 72px; height: 72px; margin: 0 auto 20px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center; font-size: 32px;
+    box-shadow: 0 8px 32px rgba(79,127,255,0.3);
+  }
   header h1 {
-    font-size: clamp(22px, 4vw, 32px);
-    font-weight: 700;
-    letter-spacing: -0.5px;
+    font-size: clamp(22px, 4vw, 34px); font-weight: 700; letter-spacing: -0.5px;
     background: linear-gradient(120deg, #fff 0%, #a0b4ff 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 10px;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    margin-bottom: 12px;
   }
-  header p { color: var(--muted); font-size: 14px; line-height: 1.6; max-width: 480px; margin: 0 auto; }
-
+  header p { color: var(--muted); font-size: 14px; line-height: 1.7; max-width: 480px; margin: 0 auto; }
   .notice {
-    background: rgba(79,127,255,0.1);
-    border: 1px solid rgba(79,127,255,0.25);
-    border-radius: var(--radius);
-    padding: 12px 18px;
-    font-size: 13px;
-    color: #a0b4ff;
-    margin-bottom: 32px;
-    line-height: 1.6;
+    background: rgba(79,127,255,0.08); border: 1px solid rgba(79,127,255,0.2);
+    border-radius: var(--radius); padding: 14px 18px; font-size: 13px; color: #8faeff;
+    margin-bottom: 28px; line-height: 1.7; display: flex; gap: 10px; align-items: flex-start;
   }
-
   .steps {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px;
-    margin-bottom: 24px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px; margin-bottom: 20px;
   }
-  .steps h2 { font-size: 15px; font-weight: 700; margin-bottom: 20px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-  .step {
-    display: flex; gap: 16px; align-items: flex-start;
-    margin-bottom: 14px;
-  }
+  .steps-header { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+  .steps-header h2 { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; }
+  .steps-header-line { flex: 1; height: 1px; background: var(--border); }
+  .step { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 16px; }
   .step:last-child { margin-bottom: 0; }
   .step-num {
-    width: 28px; height: 28px; min-width: 28px;
-    border-radius: 50%;
+    width: 30px; height: 30px; min-width: 30px; border-radius: 50%;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; color: #fff;
+    font-size: 13px; font-weight: 700; color: #fff;
+    box-shadow: 0 4px 12px rgba(79,127,255,0.25);
   }
-  .step-text { font-size: 14px; line-height: 1.7; padding-top: 3px; color: var(--text); }
+  .step-text { font-size: 14px; line-height: 1.75; padding-top: 5px; color: var(--text); }
   .step-text a { color: #7c9fff; text-decoration: none; }
   .step-text a:hover { text-decoration: underline; }
-  .step-text kbd {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 1px 7px;
-    font-size: 12px;
-    font-family: monospace;
-    color: #c0c8ff;
+  kbd {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    border-bottom: 2px solid rgba(255,255,255,0.12); border-radius: 6px;
+    padding: 1px 8px; font-size: 11px; font-family: monospace; color: #c0c8ff; vertical-align: 1px;
   }
-
-  .input-area {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 20px;
+  .input-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; margin-bottom: 20px;
   }
-  .input-area label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 10px; }
+  .input-label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+  }
   textarea {
-    width: 100%;
-    height: 160px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-size: 13px;
-    font-family: monospace;
-    padding: 14px;
-    resize: vertical;
-    transition: border-color 0.2s;
-    outline: none;
+    width: 100%; height: 160px;
+    background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-size: 12.5px; font-family: 'SF Mono', 'Fira Code', monospace;
+    padding: 14px 16px; resize: vertical; outline: none; line-height: 1.6;
+    transition: border-color 0.2s, box-shadow 0.2s;
   }
-  textarea:focus { border-color: var(--accent); }
-  textarea::placeholder { color: var(--muted); }
-
-  .btn {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff;
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s;
-    margin-top: 14px;
-    letter-spacing: 0.3px;
+  textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,127,255,0.12); }
+  textarea::placeholder { color: rgba(123,128,160,0.6); }
+  .actions { display: flex; gap: 12px; margin-top: 14px; }
+  .btn-primary {
+    flex: 1; padding: 13px 20px; border: none; border-radius: 10px;
+    background: linear-gradient(135deg, #5a8aff, #7c5cfc);
+    color: #fff; font-family: inherit; font-size: 15px; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.3px;
+    box-shadow: 0 4px 20px rgba(79,127,255,0.25);
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
   }
-  .btn:hover { opacity: 0.9; }
-  .btn:active { transform: scale(0.98); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
+  .btn-primary:hover { opacity: 0.9; box-shadow: 0 6px 24px rgba(79,127,255,0.35); }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-clear {
+    padding: 13px 18px; border: 1px solid var(--border); border-radius: 10px;
+    background: transparent; color: var(--muted); font-family: inherit; font-size: 14px;
+    cursor: pointer; transition: background 0.2s, color 0.2s;
+  }
+  .btn-clear:hover { background: rgba(255,255,255,0.05); color: var(--text); }
   .error {
-    background: rgba(255,80,80,0.1);
-    border: 1px solid rgba(255,80,80,0.3);
-    border-radius: 10px;
-    padding: 14px 18px;
-    color: #ff8888;
-    font-size: 14px;
-    margin-top: 16px;
-    display: none;
+    background: rgba(255,80,80,0.08); border: 1px solid rgba(255,80,80,0.25);
+    border-radius: 10px; padding: 14px 18px; color: #ff8888; font-size: 14px;
+    margin-top: 14px; display: none; line-height: 1.6;
   }
-  .error.show { display: block; }
+  .error.show { display: flex; gap: 10px; align-items: flex-start; }
 
-  /* Results */
-  #result { margin-top: 36px; display: none; }
+  .stats-bar { display: none; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stats-bar.show { display: grid; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px; text-align: center;
+  }
+  .stat-value { font-size: 26px; font-weight: 700; color: var(--text); line-height: 1; margin-bottom: 4px; }
+  .stat-label { font-size: 12px; color: var(--muted); }
+
+  .coverage-bar {
+    display: none; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; font-size: 13px;
+  }
+  .coverage-bar.show { display: flex; }
+  .coverage-track {
+    flex: 1; height: 6px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden;
+  }
+  .coverage-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.5s ease; }
+  .coverage-text { color: var(--muted); white-space: nowrap; }
+  .coverage-pct { font-weight: 700; color: #8faeff; }
+
+  #result { display: none; }
   #result.show { display: block; }
-  #result h2 {
-    font-size: 18px; font-weight: 700; margin-bottom: 20px;
-    display: flex; align-items: center; gap: 10px;
+  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .result-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .sort-group { display: flex; gap: 6px; }
+  .sort-btn {
+    padding: 6px 14px; font-size: 12px; border: 1px solid var(--border); border-radius: 8px;
+    background: transparent; color: var(--muted); cursor: pointer; font-family: inherit; transition: all 0.2s;
   }
-  #result h2 span { font-size: 13px; font-weight: 400; color: var(--muted); }
+  .sort-btn.active { background: rgba(79,127,255,0.15); border-color: rgba(79,127,255,0.4); color: #8faeff; }
 
-  .friends-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 14px;
+  .search-wrap { position: relative; margin-bottom: 16px; }
+  .search-wrap input {
+    width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-size: 14px; font-family: inherit;
+    padding: 11px 16px 11px 40px; outline: none; transition: border-color 0.2s;
   }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 15px; pointer-events: none; }
+
+  .friends-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
 
   .friend-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    transition: border-color 0.2s, transform 0.2s;
-    animation: fadeUp 0.3s ease both;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px 18px; display: flex; align-items: center; gap: 14px;
+    transition: border-color 0.2s, transform 0.2s, background 0.2s;
+    animation: fadeUp 0.4s ease both; cursor: pointer; text-decoration: none;
   }
-  .friend-card:hover {
-    border-color: rgba(79,127,255,0.35);
-    transform: translateY(-2px);
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  .friend-card:hover { border-color: rgba(79,127,255,0.35); background: rgba(79,127,255,0.04); transform: translateY(-2px); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
   .friend-avatar {
-    width: 44px; height: 44px; min-width: 44px;
-    border-radius: 50%;
-    overflow: hidden;
-    background: var(--card);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
+    width: 48px; height: 48px; min-width: 48px; border-radius: 50%;
+    overflow: hidden; position: relative; background: var(--card);
   }
-  .friend-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-  .friend-info { min-width: 0; }
-  .friend-rank { font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 2px; }
-  .friend-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .friend-id   { font-size: 11px; color: var(--muted); }
-
-  .top-badge {
-    border-color: rgba(255,200,50,0.35) !important;
-    background: linear-gradient(135deg, rgba(255,200,50,0.06), rgba(255,150,30,0.04));
+  .friend-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .friend-avatar .fallback {
+    position: absolute; inset: 0; display: none;
+    align-items: center; justify-content: center;
+    font-size: 17px; font-weight: 700; color: #fff;
   }
-  .top-badge .friend-rank { color: #ffc832; }
 
-  footer { margin-top: 60px; text-align: center; font-size: 12px; color: var(--muted); }
+  .friend-info { min-width: 0; flex: 1; }
+  .friend-rank { font-size: 11px; font-weight: 700; margin-bottom: 3px; letter-spacing: 0.5px; }
+  .friend-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); margin-bottom: 2px; }
+  .friend-uid { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .name-badge {
+    display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 99px;
+    margin-left: 4px; vertical-align: middle; font-weight: 600;
+  }
+  .name-badge.found { background: rgba(32,201,151,0.15); color: #20c997; }
+  .name-badge.missing { background: rgba(123,128,160,0.12); color: var(--muted); }
+
+  .gold   { border-color: rgba(255,196,50,0.3) !important; background: rgba(255,196,50,0.03); }
+  .silver { border-color: rgba(192,192,192,0.3) !important; background: rgba(200,200,200,0.03); }
+  .bronze { border-color: rgba(200,130,80,0.3)  !important; background: rgba(200,130,80,0.03); }
+  .gold   .friend-rank { color: #ffc432; }
+  .silver .friend-rank { color: #b0b8cc; }
+  .bronze .friend-rank { color: #cc8050; }
+
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); font-size: 14px; display: none; }
+  .empty-state.show { display: block; }
+
+  footer { margin-top: 60px; text-align: center; font-size: 12px; color: rgba(123,128,160,0.5); }
 </style>
 </head>
 <body>
 <div class="wrap">
-
   <header>
-    <div class="icon">👁️</div>
+    <div class="header-icon">👁️</div>
     <h1>Facebook 朋友關注分析</h1>
-    <p>透過解析 Facebook 原始碼，找出臉書演算法中最關注你的朋友排名。</p>
+    <p>透過解析 Facebook 原始碼，找出演算法中最關注你的朋友排名與姓名。</p>
   </header>
 
   <div class="notice">
-    ⚠️ 請僅用於自己的 Facebook 帳號，請勿擅自查看他人資料，以免造成法律或感情問題。
+    <span>⚠️</span>
+    <span>請僅用於自己的 Facebook 帳號，請勿擅自查看他人資料，以免造成隱私或法律問題。</span>
   </div>
 
   <div class="steps">
-    <h2>操作步驟</h2>
+    <div class="steps-header">
+      <h2>操作步驟</h2>
+      <div class="steps-header-line"></div>
+    </div>
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-text">前往 <a href="https://www.facebook.com/" target="_blank" rel="nofollow">www.facebook.com</a> 並確認已登入</div>
     </div>
     <div class="step">
       <div class="step-num">2</div>
-      <div class="step-text">按 <kbd>Ctrl</kbd>+<kbd>U</kbd>（Windows）或 <kbd>⌘</kbd>+<kbd>U</kbd>（Mac）開啟原始碼，或右鍵 → 「檢視網頁原始碼」</div>
+      <div class="step-text">按 <kbd>Ctrl</kbd>+<kbd>U</kbd>（Windows）或 <kbd>⌘</kbd>+<kbd>U</kbd>（Mac）開啟原始碼</div>
     </div>
     <div class="step">
       <div class="step-num">3</div>
@@ -247,34 +235,91 @@
     </div>
     <div class="step">
       <div class="step-num">4</div>
-      <div class="step-text">貼入下方欄位並點擊「分析」</div>
+      <div class="step-text">貼入下方欄位，點擊「開始分析」即可</div>
     </div>
   </div>
 
-  <div class="input-area">
-    <label for="input">將原始碼貼入此處</label>
-    <textarea id="input" placeholder="貼入 Facebook 首頁原始碼 (Ctrl+V)..."></textarea>
-    <button class="btn" id="analyzeBtn" onclick="analyze()">🔍 開始分析</button>
-    <div class="error" id="errorBox"></div>
+  <div class="input-card">
+    <div class="input-label">📋 原始碼</div>
+    <textarea id="input" placeholder="將 Facebook 首頁原始碼貼入此處 (Ctrl+V)..."></textarea>
+    <div class="actions">
+      <button class="btn-primary" onclick="analyze()">🔍 開始分析</button>
+      <button class="btn-clear" onclick="clearAll()">清除</button>
+    </div>
+    <div class="error" id="errorBox">
+      <span>⚠️</span><span id="errorMsg"></span>
+    </div>
+  </div>
+
+  <div class="stats-bar" id="statsBar">
+    <div class="stat-card">
+      <div class="stat-value" id="statTotal">0</div>
+      <div class="stat-label">找到的朋友</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statNamed">0</div>
+      <div class="stat-label">成功取得姓名</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statShown">0</div>
+      <div class="stat-label">目前顯示</div>
+    </div>
   </div>
 
   <div id="result">
-    <h2>分析結果 <span id="resultCount"></span></h2>
+    <div class="coverage-bar" id="coverageBar">
+      <span class="coverage-text">姓名解析率</span>
+      <div class="coverage-track"><div class="coverage-fill" id="coverageFill" style="width:0%"></div></div>
+      <span class="coverage-pct" id="coveragePct">0%</span>
+    </div>
+
+    <div class="result-header">
+      <div class="result-title">分析結果</div>
+      <div class="sort-group">
+        <button class="sort-btn active" id="sortRank" onclick="sortBy('rank')">排名</button>
+        <button class="sort-btn" id="sortId" onclick="sortBy('id')">UID</button>
+        <button class="sort-btn" id="sortName" onclick="sortBy('name')">姓名</button>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="搜尋姓名或 UID..." oninput="filterFriends()" />
+    </div>
+
     <div class="friends-grid" id="friendsGrid"></div>
+    <div class="empty-state" id="emptyState">找不到符合條件的朋友</div>
   </div>
 
-  <footer>此頁面與 Facebook 無關。Facebook 是 Meta 的註冊商標。</footer>
-
+  <footer>此頁面與 Facebook / Meta 無關。Facebook 是 Meta Platforms, Inc. 的註冊商標。</footer>
 </div>
+
 <script>
+var allFriends = [];
+var currentSort = 'rank';
+var avatarColors = ['#4f7fff','#7c5cfc','#ff6b6b','#ffa94d','#20c997','#74c0fc','#f78fb3','#a29bfe'];
+
 function showError(msg) {
-  var el = document.getElementById('errorBox');
-  el.textContent = msg;
-  el.classList.add('show');
+  document.getElementById('errorMsg').textContent = msg;
+  document.getElementById('errorBox').classList.add('show');
+}
+function clearError() { document.getElementById('errorBox').classList.remove('show'); }
+
+function clearAll() {
+  document.getElementById('input').value = '';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('statsBar').classList.remove('show');
+  document.getElementById('coverageBar').classList.remove('show');
+  clearError(); allFriends = [];
 }
 
-function clearError() {
-  document.getElementById('errorBox').classList.remove('show');
+function decodeUnicode(str) {
+  try {
+    return str.replace(/\\u([0-9a-fA-F]{4})/g, function(_, h) {
+      return String.fromCharCode(parseInt(h, 16));
+    });
+  } catch(e) { return str; }
 }
 
 function analyze() {
@@ -282,90 +327,154 @@ function analyze() {
   var src = document.getElementById('input').value.trim();
   if (!src) { showError('請先貼入 Facebook 原始碼。'); return; }
 
-  // --- Parse friend IDs from Facebook source ---
-  // Facebook embeds ordered friend list in various formats across versions.
-  // Strategy: collect all numeric IDs from known patterns, deduplicate in order.
+  var nameMap = {};
 
-  var ids = [];
-  var seen = {};
-
-  function addId(id) {
-    if (id && id.length >= 5 && id.length <= 20 && !seen[id]) {
-      seen[id] = true;
-      ids.push(id);
-    }
+  // Strategy 1: {"name":"...","id":"..."} tight pairs
+  var s1 = src.matchAll(/\{"(?:name|id)"\s*:\s*"([^"]{1,80})"\s*,\s*"(?:name|id)"\s*:\s*"([^"]{1,80})"\}/g);
+  for (var m of s1) {
+    var a = decodeUnicode(m[1]), b = decodeUnicode(m[2]);
+    var idA = a.match(/^\d{5,20}$/), idB = b.match(/^\d{5,20}$/);
+    if (idA && !idB) nameMap[a] = b;
+    else if (idB && !idA) nameMap[b] = a;
   }
 
-  // Pattern 1: ordered_friend array / list in JSON-like blobs  e.g. "uid":123456
+  // Strategy 2: "name":"..." followed within ~120 chars by "id":"digits"
+  var s2 = src.matchAll(/"name"\s*:\s*"((?:[^"\\]|\\.)*)"\s*(?:,[^,]{0,80}?)*?"id"\s*:\s*"(\d{5,20})"/g);
+  for (var m of s2) {
+    var name = decodeUnicode(m[1].replace(/\\/g,''));
+    var id = m[2];
+    if (name && name.length > 0 && name.length <= 60 && !nameMap[id]) nameMap[id] = name;
+  }
+
+  // Strategy 3: reverse — "id" then "name"
+  var s3 = src.matchAll(/"id"\s*:\s*"(\d{5,20})"\s*(?:,[^,]{0,80}?)*?"name"\s*:\s*"((?:[^"\\]|\\.)*)"/g);
+  for (var m of s3) {
+    var id = m[1], name = decodeUnicode(m[2].replace(/\\/g,''));
+    if (name && name.length > 0 && name.length <= 60 && !nameMap[id]) nameMap[id] = name;
+  }
+
+  // Strategy 4: actor/node/user object pattern
+  var s4 = src.matchAll(/(?:actor|node|user|friend)\s*[:{]\s*[^{]{0,20}\{[^}]*?"name"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,[^}]*?"id"\s*:\s*"(\d{5,20})"/g);
+  for (var m of s4) {
+    var name = decodeUnicode(m[1].replace(/\\/g,'')), id = m[2];
+    if (name && !nameMap[id]) nameMap[id] = name;
+  }
+
+  // Strategy 5: __typename: "User" with name + id
+  var s5 = src.matchAll(/"__typename"\s*:\s*"User"[^}]{0,300}"name"\s*:\s*"((?:[^"\\]|\\.)*)"\s*(?:[^}]{0,200}?)"id"\s*:\s*"(\d{5,20})"/g);
+  for (var m of s5) {
+    var name = decodeUnicode(m[1].replace(/\\/g,'')), id = m[2];
+    if (name && name.length <= 60 && !nameMap[id]) nameMap[id] = name;
+  }
+
+  // Collect ordered IDs
+  var ids = []; var seen = {};
+  function addId(id) {
+    if (id && id.length >= 5 && id.length <= 20 && !seen[id]) { seen[id] = true; ids.push(id); }
+  }
   var p1 = src.matchAll(/"(?:uid|userID|id|userId)"\s*:\s*"?(\d{5,20})"?/g);
   for (var m of p1) addId(m[1]);
-
-  // Pattern 2: friendIds array  e.g. [123,456,...]
   var p2 = src.match(/(?:friendIDs|friend_ids|ordered_friend_list|orderedFriendList)[^[]*\[([^\]]{0,5000})\]/);
-  if (p2) {
-    var nums = p2[1].match(/\d{5,20}/g) || [];
-    nums.forEach(addId);
-  }
-
-  // Pattern 3: profile links  href="/profile.php?id=XXXXXXX" or /name (less reliable, fallback)
+  if (p2) (p2[1].match(/\d{5,20}/g)||[]).forEach(addId);
   var p3 = src.matchAll(/profile\.php\?id=(\d{5,20})/g);
   for (var m of p3) addId(m[1]);
-
-  // Pattern 4: plain numeric sequences after "list":[  (common in newer FB source)
   var p4 = src.matchAll(/"list"\s*:\s*\[([^\]]{0,8000})\]/g);
-  for (var m of p4) {
-    var nums2 = m[1].match(/\d{5,20}/g) || [];
-    nums2.forEach(addId);
-  }
+  for (var m of p4) (m[1].match(/\d{5,20}/g)||[]).forEach(addId);
 
   if (ids.length === 0) {
     showError('找不到朋友列表。請確認您貼入的是 Facebook 首頁（www.facebook.com）的完整原始碼，且已登入帳號。');
     return;
   }
 
-  renderResults(ids);
+  allFriends = ids.map(function(id, i) {
+    return { id: id, name: nameMap[id] || null, rank: i + 1 };
+  });
+
+  currentSort = 'rank';
+  document.getElementById('sortRank').classList.add('active');
+  document.getElementById('sortId').classList.remove('active');
+  document.getElementById('sortName').classList.remove('active');
+  document.getElementById('searchInput').value = '';
+
+  var named = allFriends.filter(function(f){ return f.name; }).length;
+  var pct = ids.length > 0 ? Math.round(named / ids.length * 100) : 0;
+
+  document.getElementById('statTotal').textContent = ids.length;
+  document.getElementById('statNamed').textContent = named;
+  document.getElementById('statShown').textContent = ids.length;
+  document.getElementById('coverageFill').style.width = pct + '%';
+  document.getElementById('coveragePct').textContent = pct + '%';
+
+  document.getElementById('statsBar').classList.add('show');
+  document.getElementById('coverageBar').classList.add('show');
+  document.getElementById('result').classList.add('show');
+
+  renderFriends(allFriends);
+  document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function renderResults(ids) {
+function sortBy(type) {
+  currentSort = type;
+  ['rank','id','name'].forEach(function(t){
+    document.getElementById('sort' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === type);
+  });
+  filterFriends();
+}
+
+function filterFriends() {
+  var q = document.getElementById('searchInput').value.trim().toLowerCase();
+  var filtered = allFriends.filter(function(f){
+    if (!q) return true;
+    return f.id.includes(q) || (f.name && f.name.toLowerCase().includes(q));
+  });
+  if (currentSort === 'id') filtered.sort(function(a,b){ return a.id.localeCompare(b.id); });
+  else if (currentSort === 'name') {
+    filtered.sort(function(a,b){
+      if (a.name && b.name) return a.name.localeCompare(b.name, 'zh-Hant');
+      if (a.name) return -1; if (b.name) return 1;
+      return 0;
+    });
+  }
+  document.getElementById('statShown').textContent = filtered.length;
+  renderFriends(filtered);
+  document.getElementById('emptyState').classList.toggle('show', filtered.length === 0);
+}
+
+function renderFriends(friends) {
   var grid = document.getElementById('friendsGrid');
-  var result = document.getElementById('result');
   grid.innerHTML = '';
+  friends.forEach(function(f, i) {
+    var r = f.rank;
+    var card = document.createElement('a');
+    card.className = 'friend-card' + (r===1?' gold':r===2?' silver':r===3?' bronze':'');
+    card.style.animationDelay = Math.min(i * 30, 600) + 'ms';
+    card.href = 'https://www.facebook.com/profile.php?id=' + f.id;
+    card.target = '_blank'; card.rel = 'nofollow noreferrer';
 
-  document.getElementById('resultCount').textContent = '共找到 ' + ids.length + ' 位';
-  result.classList.add('show');
-
-  var avatarColors = ['#4f7fff','#7c5cfc','#ff6b6b','#ffa94d','#20c997','#74c0fc'];
-
-  ids.forEach(function(id, i) {
-    var card = document.createElement('div');
-    card.className = 'friend-card' + (i < 3 ? ' top-badge' : '');
-    card.style.animationDelay = Math.min(i * 40, 800) + 'ms';
-
-    var rank = i + 1;
-    var color = avatarColors[i % avatarColors.length];
-    var rankLabel = rank === 1 ? '🥇 第 1 名' : rank === 2 ? '🥈 第 2 名' : rank === 3 ? '🥉 第 3 名' : '第 ' + rank + ' 名';
+    var rankLabel = r===1?'🥇 第 1 名':r===2?'🥈 第 2 名':r===3?'🥉 第 3 名':'第 '+r+' 名';
+    var color = avatarColors[(r-1) % avatarColors.length];
+    var displayName = f.name || ('UID ' + f.id);
+    var badgeHtml = f.name
+      ? '<span class="name-badge found">已解析</span>'
+      : '<span class="name-badge missing">僅 UID</span>';
 
     card.innerHTML =
       '<div class="friend-avatar">' +
-        '<img src="https://graph.facebook.com/' + id + '/picture?type=square" ' +
-             'onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'" ' +
-             'alt="" loading="lazy" />' +
-        '<span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:' + color + ';color:#fff;font-weight:700;font-size:16px;">' +
-          rank + '</span>' +
+        '<img src="https://graph.facebook.com/'+f.id+'/picture?type=square" alt="" loading="lazy" ' +
+          'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'" />' +
+        '<div class="fallback" style="background:'+color+'">'+r+'</div>' +
       '</div>' +
       '<div class="friend-info">' +
-        '<div class="friend-rank">' + rankLabel + '</div>' +
-        '<div class="friend-name">' +
-          '<a href="https://www.facebook.com/profile.php?id=' + id + '" target="_blank" rel="nofollow" ' +
-             'style="color:inherit;text-decoration:none;">' + id + '</a>' +
-        '</div>' +
-        '<div class="friend-id">UID: ' + id + '</div>' +
+        '<div class="friend-rank">'+rankLabel+badgeHtml+'</div>' +
+        '<div class="friend-name">'+escHtml(displayName)+'</div>' +
+        '<div class="friend-uid">UID: '+f.id+'</div>' +
       '</div>';
-
     grid.appendChild(card);
   });
+}
 
-  result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 </script>
 </body>
